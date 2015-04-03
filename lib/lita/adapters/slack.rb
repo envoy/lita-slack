@@ -33,7 +33,7 @@ module Lita
       attr_reader :rtm_connection
 
       def channel_for(target)
-        if target.private_message?
+        if target.private_message? and not target.user.id.empty?
           rtm_connection.im_for(target.user.id)
         else
           target.room
