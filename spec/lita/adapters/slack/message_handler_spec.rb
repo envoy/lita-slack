@@ -121,6 +121,48 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
         end
       end
 
+      context "when the message has attachments with actions" do
+        let(:action) do
+          {
+            "id"=>"1",
+            "name"=>"actionexample",
+            "text"=>"Action Example",
+            "type"=>"button",
+            "value"=> "{\"token\":\"xoxb-abcd\",\"callbackUrl\":\"http://sample.com/action\"}",
+            "style"=>""
+          }
+        end
+        let(:attachment_with_actions) do
+          {
+            "callback_id"=>"callback",
+            "text"=>"Fallback Text",
+            "id"=>1,
+            "color"=>"ef3934",
+            "actions"=> [action],
+            "fallback"=>"Fallback Text"
+          }
+        end
+        let(:data) do
+          {
+            "type" => "message",
+            "channel" => "C2147483705",
+            "user" => "U023BECGF",
+            "text" => "Hello",
+            "attachments" => [attachment_with_actions]
+          }
+        end
+
+        it "recives attachment text with the action information" do
+          expect(Lita::Message).to receive(:new).with(
+            robot,
+            "Hello\nFallback Text\nactionexample\nAction Example\n{\"token\":\"xoxb-abcd\",\"callbackUrl\":\"http://sample.com/action\"}",
+            source
+          ).and_return(message)
+
+          subject.handle
+        end
+      end
+
       context "when the message is nil" do
         let(:data) do
           {

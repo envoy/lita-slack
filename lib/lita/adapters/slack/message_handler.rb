@@ -39,10 +39,26 @@ module Lita
           end
 
           attachment_text = Array(data["attachments"]).map do |attachment|
-            attachment["text"]
+            if attachment['actions']
+              parse_attachment_with_actions(attachment)
+            else
+              attachment["text"]
+            end
           end
 
           ([normalized_message] + attachment_text).compact.join("\n")
+        end
+
+        # https://api.slack.com/actions
+        def parse_attachment_with_actions(attachment)
+          lines = []
+          lines << attachment["text"]
+          Array(attachment["actions"]).map do |field|
+            lines << field["name"]
+            lines << field["text"]
+            lines << field["value"]
+          end
+          lines.compact.map(&:strip).reject(&:empty?)
         end
 
         def channel
